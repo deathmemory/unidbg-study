@@ -34,6 +34,8 @@ import com.github.unidbg.virtualmodule.android.AndroidModule;
 import keystone.Keystone;
 import keystone.KeystoneArchitecture;
 import keystone.KeystoneMode;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -137,11 +139,11 @@ public class ctrip extends AbstractJni implements IOResolver {
         DvmClass classSecurityUtil = vm.resolveClass("ctrip/android/security/SecurityUtil");
         // coord: (0,321,38) | addr: Lctrip/android/security/SecurityUtil;->getInstance()Lctrip/android/security/SecurityUtil; | loc: ?
 //        DvmObject<?> inst = classSecurityUtil.callStaticJniMethodObject(emulator, "getInstance()Lctrip/android/security/SecurityUtil;");
-        DvmObject<?> inst = classSecurityUtil.newObject(null);
         // coord: (654500,0,31) | addr: Lctrip/android/security/SecurityUtil;->init(Landroid/content/Context;)V | loc: ?
-        DvmObject<?> context = vm.resolveClass("android/content/Context").newObject(null);
-        inst.callJniMethod(emulator, "init(Landroid/content/Context;)V", context);
-//        DvmObject<?> res = inst.callJniMethodObject(emulator, "getToken()Ljava/lang/String;");
+        DvmObject<?> inst = classSecurityUtil.newObject(null);
+//        DvmObject<?> context = vm.resolveClass("android/content/Context").newObject(null);
+//        inst.callJniMethod(emulator, "init(Landroid/content/Context;)V", context);
+        DvmObject<?> res = inst.callJniMethodObject(emulator, "getToken()Ljava/lang/String;");
         System.out.println("done!");
 
 
@@ -165,11 +167,19 @@ public class ctrip extends AbstractJni implements IOResolver {
     }
 
     public static void main(String[] args) throws Exception {
+//        Logger.getLogger("com.github.unidbg.linux.ARM32SyscallHandler").setLevel(Level.DEBUG);
+//        Logger.getLogger("com.github.unidbg.unix.UnixSyscallHandler").setLevel(Level.DEBUG);
+//        Logger.getLogger("com.github.unidbg.AbstractEmulator").setLevel(Level.DEBUG);
+//        Logger.getLogger("com.github.unidbg.linux.android.dvm.DalvikVM").setLevel(Level.DEBUG);
+//        Logger.getLogger("com.github.unidbg.linux.android.dvm.BaseVM").setLevel(Level.DEBUG);
+//        Logger.getLogger("com.github.unidbg.linux.android.dvm").setLevel(Level.DEBUG);
         ctrip test = new ctrip();
+        System.out.println("call init");
+        test.callInit();
 //        test.callsimpleSign();
+        System.out.println("call getToken");
         test.call_getToken();
 //        test.callgetNameByPid();
-        test.callInit();
     }
 
     //3、
@@ -244,6 +254,11 @@ public class ctrip extends AbstractJni implements IOResolver {
                     "softirq 348812388 25269653 145488298 170737 5276360 4112838 39872 9044127 63500389 0 95910114";
             return FileResult.success(new ByteArrayFileIO(oflags, pathname, cpustat.getBytes()));
         }
+        else if ("/storage/emulated/0/fcd70f3c7711c0988bd8b9cdccf75794".equals(pathname)) {
+            return FileResult.success(new ByteArrayFileIO(oflags, pathname,
+                    "01c974b264b00233d60035030be1beea0f2847965ea6bbf337b48788087d23ec"
+                            .getBytes()));
+        }
         System.err.println("uncovered file");
         return null;
     }
@@ -298,6 +313,9 @@ public class ctrip extends AbstractJni implements IOResolver {
                     case 108:{
                         return new StringObject(vm, "78");
                     }
+                    case 109:{
+                        return new StringObject(vm, "");
+                    }
                 }
                 System.out.println("okio/zz->b(I) Key:"+key);
             }
@@ -334,7 +352,7 @@ public class ctrip extends AbstractJni implements IOResolver {
             case "ctrip/android/sephone/apiutils/jazz/Utils->getBundleName()Ljava/lang/String;":
                 return new StringObject(vm, "ctrip.android.view");
             case "ctrip/android/sephone/apiutils/jazz/Utils->getAppVersion()Ljava/lang/String;":
-                return new StringObject(vm, "8.47.2");
+                return new StringObject(vm, "8.35.3");
             case "ctrip/android/sephone/apiutils/jazz/Utils->getAppVersionCode()Ljava/lang/String;":
                 return new StringObject(vm, "1512");
             case "ctrip/android/sephone/apiutils/jazz/Utils->getHostName()Ljava/lang/String;":
